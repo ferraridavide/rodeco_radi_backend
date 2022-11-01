@@ -1,11 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 namespace RodecoRADI.Core.Persistance.Models
 {
     [Owned]
-    public class EnumOrCustom<T> where T : Enum
+    public class EnumOrCustom<T> where T : struct, Enum?
     {
-        public T? Value { get; set; }
+        public Nullable<T> Value { get; set; }
         public string? Custom { get; set; }
 
         public EnumOrCustom() { }

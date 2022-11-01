@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using RodecoRADI.Core.Persistance;
 using RodecoRADI.Core.Persistance.Models;
 
@@ -8,10 +9,10 @@ namespace RodecoRADI.WebAPI.Controllers
     [Route("[controller]")]
     public class GalleryController : ControllerBase
     {
-        private readonly ILogger<EntityController> logger;
+        private readonly ILogger<GalleryController> logger;
         private readonly RodecoContext rodecoContext;
 
-        public GalleryController(ILogger<EntityController> logger, RodecoContext rodecoContext)
+        public GalleryController(ILogger<GalleryController> logger, RodecoContext rodecoContext)
         {
             this.logger = logger;
             this.rodecoContext = rodecoContext;
@@ -30,11 +31,18 @@ namespace RodecoRADI.WebAPI.Controllers
         }
 
         [HttpPost("post")]
-        public IActionResult Post([FromBody] Gallery gallery)
+        public Guid Post([FromBody] Gallery gallery)
         {
-            rodecoContext.Add(gallery);
+            if (rodecoContext.Galleries.Any(x => x.Id == gallery.Id))
+            {
+                rodecoContext.Galleries.Update(gallery);
+            } else
+            {
+                rodecoContext.Galleries.Add(gallery);
+            }
+            
             rodecoContext.SaveChanges();
-            return NoContent();
+            return gallery.Id;
         }
 
         [HttpDelete("{id}")]

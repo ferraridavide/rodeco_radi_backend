@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore;
 using RodecoRADI.Core;
+using RodecoRADI.Core.Persistance;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,7 +24,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.Never;
 });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -37,6 +40,12 @@ builder.Services.Configure<FormOptions>(o =>
 });
 
 var app = builder.Build();
+
+// Run database migrations
+
+await using var scope = app.Services.CreateAsyncScope();
+var context = scope.ServiceProvider.GetRequiredService<RodecoContext>();
+await context.Database.MigrateAsync();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

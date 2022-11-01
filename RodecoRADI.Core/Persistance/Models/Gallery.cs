@@ -6,8 +6,17 @@ namespace RodecoRADI.Core.Persistance.Models
 {
     public class Gallery : BaseEntity
     {
+        [NotMapped]
+        [JsonPropertyName("id")]
+        public string _Id
+        {
+            get { return Id.ToString(); }
+            set { Id = Utils.ParseGuidOrNew(value); }
+        }
+
+        [JsonIgnore]
         public Guid Id { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } 
         public string Code { get; set; }
 
         [JsonIgnore]
@@ -22,7 +31,7 @@ namespace RodecoRADI.Core.Persistance.Models
 
         public string? Section { get; set; }
         public string? Chainage { get; set; }
-        public Coordinates? StartCoordinates { get; set; }
+        public Coordinates? StartCoordinates { get; set; } 
         public Coordinates? EndCoordinates { get; set; }
         public string? ProjectDocumentation { get; set; }
         [Range(0, 2999)]
@@ -39,9 +48,9 @@ namespace RodecoRADI.Core.Persistance.Models
         public EnumOrCustom<GalleryMaterial>? Material { get; set; }
         public EnumOrCustom<DrainageSystem>? DrainageSystem { get; set; }
         public EnumOrCustom<PavementMaterial>? PavementMaterial { get; set; }
-        public EnumOrCustom<PedestrianWayMaterial>? PedestrianWayMaterial { get; set; }
+        public EnumOrCustom<GalleryPedestrianWayMaterial>? PedestrianWayMaterial { get; set; }
         public EnumOrCustom<Installations>? Installations { get; set; }
-        public IEnumerable<Photo>? Photos { get; set; }
+        public ICollection<Photo>? Photos { get; set; }
         public string? Waterproofing { get; set; }
         public int? nDrainageFacilities { get; set; }
         public string? GalleryIllumination { get; set; }

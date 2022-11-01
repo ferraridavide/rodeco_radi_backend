@@ -25,13 +25,17 @@ namespace RodecoRADI.WebAPI.Controllers
             {
                 throw new NotImplementedException();
             }
-            return rodecoContext.Galleries.Select(x => (BaseEntity)x);
+            return rodecoContext.Galleries.Select(x => (BaseEntity)x).ToList()
+                .Concat(rodecoContext.Bridges.Select(x => (BaseEntity)x).ToList())
+                .Concat(rodecoContext.Tunnels.Select(x => (BaseEntity)x).ToList())
+                .Concat(rodecoContext.Walls.Select(x => (BaseEntity)x).ToList())
+                .Concat(rodecoContext.Sidewalks.Select(x => (BaseEntity)x).ToList());
         }
 
 
-        
 
-        
+
+
 
         [HttpPost("test")]
         public IActionResult PostTunnel()
@@ -41,20 +45,14 @@ namespace RodecoRADI.WebAPI.Controllers
                 Name = "tunnel1",
                 Code = "code1",
                 CreationDate = DateTime.Now,
-                Photos = new Photo[]
-                {
-                    new Photo() { Description = "desc1", Image = Encoding.ASCII.GetBytes("TEST") }
-                }
+                Photos = new List<Photo> { new Photo() { Description = "desc1", Image = Encoding.ASCII.GetBytes("TEST") } }
             });
             rodecoContext.Add(new Gallery
             {
                 Name = "gallery2",
                 Code = "code2",
                 CreationDate = DateTime.Now,
-                Photos = new Photo[]
-                {
-                    new Photo() { Description = "desc2", Image = Encoding.ASCII.GetBytes("TEST") }
-                }
+                Photos = new List<Photo> { new Photo() { Description = "desc2", Image = Encoding.ASCII.GetBytes("TEST") } }
             });
 
             rodecoContext.SaveChanges();
@@ -62,15 +60,28 @@ namespace RodecoRADI.WebAPI.Controllers
         }
 
         [HttpPost, DisableRequestSizeLimit]
-        public async Task<IActionResult> UploadAsync(IFormFile file)
+        public async Task<IActionResult> UploadAsync(IFormFile file, string associatedEntityGuid, string name)
         {
             if (file.Length > 0)
             {
                 using (var ms = new MemoryStream())
                 {
                     await file.CopyToAsync(ms);
-                    var photo = new Photo() { Description = "Desc", Image = ms.ToArray() };
-                    rodecoContext.Photos.Add(photo);
+                    var photo = new Photo() { Description = name, Image = ms.ToArray() };
+
+                    Func<BaseEntity, bool> predicate = x => x.Id == Guid.Parse(associatedEntityGuid.Trim('"'));
+
+                    var entity =
+                        rodecoContext.Galleries.FirstOrDefault(predicate) ??
+                        rodecoContext.Tunnels.FirstOrDefault(predicate) ??
+                        rodecoContext.Bridges.FirstOrDefault(predicate) ??
+                        rodecoContext.Walls.FirstOrDefault(predicate) ??
+                        rodecoContext.Sidewalks.FirstOrDefault(predicate);
+                    if (entity != null)
+                    {
+                        entity.Photos ??= new List<Photo>();
+                        entity.Photos.Add(photo);
+                    }
                     await rodecoContext.SaveChangesAsync();
                     return Ok(photo.Id);
                 }

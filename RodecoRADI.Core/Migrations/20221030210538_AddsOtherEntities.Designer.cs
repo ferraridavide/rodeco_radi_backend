@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RodecoRADI.Core.Persistance;
 
@@ -11,9 +12,10 @@ using RodecoRADI.Core.Persistance;
 namespace RodecoRADI.Core.Migrations
 {
     [DbContext(typeof(RodecoContext))]
-    partial class RodecoContextModelSnapshot : ModelSnapshot
+    [Migration("20221030210538_AddsOtherEntities")]
+    partial class AddsOtherEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
