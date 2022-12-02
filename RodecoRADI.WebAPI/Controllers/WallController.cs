@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using RodecoRADI.Core.Persistance.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using RodecoRADI.Core;
 using RodecoRADI.Core.Persistance;
+using RodecoRADI.Core.Persistance.Models;
 
 namespace RodecoRADI.WebAPI.Controllers
 {
@@ -22,7 +23,7 @@ namespace RodecoRADI.WebAPI.Controllers
         [Produces(typeof(Wall))]
         public IActionResult Get(Guid id)
         {
-            var wall = rodecoContext.Walls.FirstOrDefault(x => x.Id == id);
+            var wall = rodecoContext.Walls.Include(x => x.Photos).FirstOrDefault(x => x.Id == id);
             if (wall is null)
             {
                 return NotFound();
@@ -33,9 +34,11 @@ namespace RodecoRADI.WebAPI.Controllers
         [HttpPost("post")]
         public Guid Post([FromBody] Wall wall)
         {
-            if (rodecoContext.Walls.Any(x => x.Id == wall.Id))
+            var source = rodecoContext.Walls.FirstOrDefault(x => x.Id == wall.Id);
+            if (source is not null)
             {
-                rodecoContext.Walls.Update(wall);
+                source.Overlay(wall);
+                if (wall.Photos is not null) foreach (var photo in wall.Photos) rodecoContext.ProcessPhoto(photo);
             }
             else
             {
@@ -54,7 +57,7 @@ namespace RodecoRADI.WebAPI.Controllers
             {
                 return NotFound();
             }
-            rodecoContext.Walls.Remove(wall);
+            wall.MarkAsDeleted = true;
             rodecoContext.SaveChanges();
             return NoContent();
         }

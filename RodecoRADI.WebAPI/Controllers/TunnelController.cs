@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using RodecoRADI.Core.Persistance.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using RodecoRADI.Core;
 using RodecoRADI.Core.Persistance;
+using RodecoRADI.Core.Persistance.Models;
 
 namespace RodecoRADI.WebAPI.Controllers
 {
@@ -22,7 +23,7 @@ namespace RodecoRADI.WebAPI.Controllers
         [Produces(typeof(Tunnel))]
         public IActionResult Get(Guid id)
         {
-            var tunnel = rodecoContext.Tunnels.FirstOrDefault(x => x.Id == id);
+            var tunnel = rodecoContext.Tunnels.Include(x => x.Photos).FirstOrDefault(x => x.Id == id);
             if (tunnel is null)
             {
                 return NotFound();
@@ -33,9 +34,11 @@ namespace RodecoRADI.WebAPI.Controllers
         [HttpPost("post")]
         public Guid Post([FromBody] Tunnel tunnel)
         {
-            if (rodecoContext.Tunnels.Any(x => x.Id == tunnel.Id))
+            var source = rodecoContext.Tunnels.FirstOrDefault(x => x.Id == tunnel.Id);
+            if (source is not null)
             {
-                rodecoContext.Tunnels.Update(tunnel);
+                source.Overlay(tunnel);
+                if (tunnel.Photos is not null) foreach (var photo in tunnel.Photos) rodecoContext.ProcessPhoto(photo);
             }
             else
             {
@@ -49,12 +52,12 @@ namespace RodecoRADI.WebAPI.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(Guid id)
         {
-            var wall = rodecoContext.Tunnels.FirstOrDefault(x => x.Id == id);
-            if (wall is null)
+            var tunnel = rodecoContext.Tunnels.FirstOrDefault(x => x.Id == id);
+            if (tunnel is null)
             {
                 return NotFound();
             }
-            rodecoContext.Tunnels.Remove(wall);
+            tunnel.MarkAsDeleted = true;
             rodecoContext.SaveChanges();
             return NoContent();
         }

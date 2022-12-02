@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace RodecoRADI.Core.Persistance.Models
 {
-    public interface BaseEntity
+    public interface IBaseEntity
     {
         [NotMapped]
         [JsonPropertyName("id")]
@@ -14,8 +14,17 @@ namespace RodecoRADI.Core.Persistance.Models
         public string Name { get;}
         public string Code { get;}
         public Coordinates? Coordinates { get; }
-        public DateTime CreationDate { get; }
-        
+        public DateTimeOffset CreationDate { get; }
+
+        [JsonIgnore]
+        public DateTimeOffset? DateCreated { get; set; }
+
+        [JsonIgnore]
+        public DateTimeOffset? DateModified { get; set; }
+
+        [JsonIgnore]
+        public bool MarkAsDeleted { get; set; }
+
         [NotMapped]
         public EntityType Type { get; }
 

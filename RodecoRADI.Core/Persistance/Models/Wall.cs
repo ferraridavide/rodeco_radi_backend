@@ -1,16 +1,10 @@
-﻿using Microsoft.VisualBasic;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace RodecoRADI.Core.Persistance.Models
 {
-    public class Wall : BaseEntity
+    public class Wall : IBaseEntity
     {
         [NotMapped]
         [JsonPropertyName("id")]
@@ -29,7 +23,7 @@ namespace RodecoRADI.Core.Persistance.Models
         [NotMapped]
         public Coordinates? Coordinates => StartCoordinates;
 
-        public DateTime CreationDate { get; set; }
+        public DateTimeOffset CreationDate { get; set; }
 
         [JsonIgnore]
         [NotMapped]
@@ -50,7 +44,18 @@ namespace RodecoRADI.Core.Persistance.Models
         public EnumOrCustom<WallLocationCrossSection>? WallLocationInCrossSection { get; set; }
         public EnumOrCustom<WallMaterial>? WallMaterial { get; set; }
         public EnumOrCustom<WallFoundation>? Foundation { get; set; }
+        public string? Notes { get; set; }
 
+        [OverlayIgnore]
         public ICollection<Photo>? Photos { get; set; }
+
+        [JsonIgnore]
+        public DateTimeOffset? DateCreated { get; set; }
+
+        [JsonIgnore]
+        public DateTimeOffset? DateModified { get; set; }
+
+        [JsonIgnore]
+        public bool MarkAsDeleted { get; set; } = false;
     }
 }

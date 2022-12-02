@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using RodecoRADI.Core;
 using RodecoRADI.Core.Persistance;
 using RodecoRADI.Core.Persistance.Models;
 
@@ -27,7 +23,7 @@ namespace RodecoRADI.WebAPI.Controllers
         [Produces(typeof(Bridge))]
         public IActionResult Get(Guid id)
         {
-            var bridge = rodecoContext.Bridges.FirstOrDefault(x => x.Id == id);
+            var bridge = rodecoContext.Bridges.Include(x => x.Photos).FirstOrDefault(x => x.Id == id);
             if (bridge is null)
             {
                 return NotFound();
@@ -38,9 +34,11 @@ namespace RodecoRADI.WebAPI.Controllers
         [HttpPost("post")]
         public Guid Post([FromBody] Bridge bridge)
         {
-            if (rodecoContext.Bridges.Any(x => x.Id == bridge.Id))
+            var source = rodecoContext.Bridges.FirstOrDefault(x => x.Id == bridge.Id);
+            if (source is not null)
             {
-                rodecoContext.Bridges.Update(bridge);
+                source.Overlay(bridge);
+                if (bridge.Photos is not null) foreach (var photo in bridge.Photos) rodecoContext.ProcessPhoto(photo);
             }
             else
             {
@@ -59,7 +57,7 @@ namespace RodecoRADI.WebAPI.Controllers
             {
                 return NotFound();
             }
-            rodecoContext.Bridges.Remove(bridge);
+            bridge.MarkAsDeleted = true;
             rodecoContext.SaveChanges();
             return NoContent();
         }

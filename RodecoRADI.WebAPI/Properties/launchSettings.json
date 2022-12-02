@@ -21,10 +21,17 @@
     "IIS Rodeco RADI": {
       "commandName": "IIS",
       "launchBrowser": true,
-      "launchUrl": "https://localhost/rodeco",
+      "launchUrl": "http://localhost/rodeco",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
+      "publishAllPorts": true,
+      "useSSL": true
     }
   },
   "$schema": "https://json.schemastore.org/launchsettings.json",

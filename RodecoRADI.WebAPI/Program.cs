@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using RodecoRADI.Core;
 using RodecoRADI.Core.Persistance;
@@ -30,7 +31,10 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddRodecoCore(builder.Configuration.GetConnectionString("WebApiDatabase"));
+
+SqlConnectionStringBuilder connectionBuilder = new SqlConnectionStringBuilder();
+connectionBuilder.ConnectionString = builder.Configuration["DB_CONNECTIONSTRING"];
+builder.Services.AddRodecoCore(connectionBuilder.ToString());
 
 builder.Services.Configure<FormOptions>(o =>
 {
@@ -41,8 +45,9 @@ builder.Services.Configure<FormOptions>(o =>
 
 var app = builder.Build();
 
-// Run database migrations
+app.Logger.LogInformation($"Using connection string: {connectionBuilder.ToString()}");
 
+// Run database migrations
 await using var scope = app.Services.CreateAsyncScope();
 var context = scope.ServiceProvider.GetRequiredService<RodecoContext>();
 await context.Database.MigrateAsync();
@@ -56,7 +61,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors();
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseAuthorization();
 

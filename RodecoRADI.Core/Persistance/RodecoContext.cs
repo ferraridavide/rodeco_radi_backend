@@ -18,21 +18,33 @@ namespace RodecoRADI.Core.Persistance
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Gallery>().HasKey(x => x.Id);
-            modelBuilder.Entity<Gallery>().Navigation(x => x.Photos).AutoInclude();
-            
             modelBuilder.Entity<Tunnel>().HasKey(x => x.Id);
-            modelBuilder.Entity<Tunnel>().Navigation(x => x.Photos).AutoInclude();
-            
             modelBuilder.Entity<Bridge>().HasKey(x => x.Id);
-            modelBuilder.Entity<Bridge>().Navigation(x => x.Photos).AutoInclude();
-            
             modelBuilder.Entity<Sidewalk>().HasKey(x => x.Id);
-            modelBuilder.Entity<Sidewalk>().Navigation(x => x.Photos).AutoInclude();
-            
             modelBuilder.Entity<Wall>().HasKey(x => x.Id);
-            modelBuilder.Entity<Wall>().Navigation(x => x.Photos).AutoInclude();
-            
+
             base.OnModelCreating(modelBuilder);
+        }
+
+        public override int SaveChanges()
+        {
+            var now = DateTime.UtcNow;
+            foreach (var e in this.ChangeTracker.Entries().Where(x => x.Entity is IBaseEntity).Where(x => x.State == EntityState.Modified || x.State == EntityState.Added))
+            {
+                if (e.Entity is not IBaseEntity entity) break;
+                if (entity.DateCreated == null) entity.DateCreated = now;
+                entity.DateModified = now;
+            }
+
+            var list = this.ChangeTracker.Entries();
+            foreach (var e in this.ChangeTracker.Entries().Where(x => x.Entity is Photo).Where(x => x.State == EntityState.Modified || x.State == EntityState.Added))
+            {
+                if (e.Entity is not Photo entity) break;
+                if (entity.DateCreated == null) entity.DateCreated = now;
+                entity.DateModified = now;
+            }
+            return base.SaveChanges();
+
         }
     }
 
@@ -41,7 +53,7 @@ namespace RodecoRADI.Core.Persistance
         public RodecoContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<RodecoContext>();
-            optionsBuilder.UseSqlServer("Data Source=xxxxxxx;Initial Catalog=rodeco;User ID=sa;Password=xxxxxxx");
+            optionsBuilder.UseSqlServer("CONNECTION STRING");
 
             return new RodecoContext(optionsBuilder.Options);
         }

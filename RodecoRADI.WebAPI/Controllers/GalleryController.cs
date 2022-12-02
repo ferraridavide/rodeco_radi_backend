@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using RodecoRADI.Core;
 using RodecoRADI.Core.Persistance;
 using RodecoRADI.Core.Persistance.Models;
 
@@ -22,7 +23,7 @@ namespace RodecoRADI.WebAPI.Controllers
         [Produces(typeof(Gallery))]
         public IActionResult Get(Guid id)
         {
-            var galleria = rodecoContext.Galleries.FirstOrDefault(x => x.Id == id);
+            var galleria = rodecoContext.Galleries.Include(x => x.Photos).FirstOrDefault(x => x.Id == id);
             if (galleria is null)
             {
                 return NotFound();
@@ -33,14 +34,17 @@ namespace RodecoRADI.WebAPI.Controllers
         [HttpPost("post")]
         public Guid Post([FromBody] Gallery gallery)
         {
-            if (rodecoContext.Galleries.Any(x => x.Id == gallery.Id))
+            var source = rodecoContext.Galleries.FirstOrDefault(x => x.Id == gallery.Id);
+            if (source is not null)
             {
-                rodecoContext.Galleries.Update(gallery);
-            } else
+                source.Overlay(gallery);
+                if (gallery.Photos is not null) foreach (var photo in gallery.Photos) rodecoContext.ProcessPhoto(photo);
+            }
+            else
             {
                 rodecoContext.Galleries.Add(gallery);
             }
-            
+
             rodecoContext.SaveChanges();
             return gallery.Id;
         }
@@ -53,7 +57,7 @@ namespace RodecoRADI.WebAPI.Controllers
             {
                 return NotFound();
             }
-            rodecoContext.Galleries.Remove(galleria);
+            galleria.MarkAsDeleted = true;
             rodecoContext.SaveChanges();
             return NoContent();
         }

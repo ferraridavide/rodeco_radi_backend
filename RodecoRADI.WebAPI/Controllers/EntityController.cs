@@ -19,23 +19,19 @@ namespace RodecoRADI.WebAPI.Controllers
         }
 
         [HttpGet("find")]
-        public IEnumerable<BaseEntity> Find(Guid? from, int? take)
+        public IEnumerable<IBaseEntity> Find(Guid? from, int? take)
         {
             if (from is not null && take is not null)
             {
                 throw new NotImplementedException();
             }
-            return rodecoContext.Galleries.Select(x => (BaseEntity)x).ToList()
-                .Concat(rodecoContext.Bridges.Select(x => (BaseEntity)x).ToList())
-                .Concat(rodecoContext.Tunnels.Select(x => (BaseEntity)x).ToList())
-                .Concat(rodecoContext.Walls.Select(x => (BaseEntity)x).ToList())
-                .Concat(rodecoContext.Sidewalks.Select(x => (BaseEntity)x).ToList());
+            return rodecoContext.Galleries      .Select(x => (IBaseEntity)x).ToList()
+                .Concat(rodecoContext.Bridges   .Select(x => (IBaseEntity)x).ToList())
+                .Concat(rodecoContext.Tunnels   .Select(x => (IBaseEntity)x).ToList())
+                .Concat(rodecoContext.Walls     .Select(x => (IBaseEntity)x).ToList())
+                .Concat(rodecoContext.Sidewalks .Select(x => (IBaseEntity)x).ToList())
+                .Where(x => x.MarkAsDeleted == false);
         }
-
-
-
-
-
 
         [HttpPost("test")]
         public IActionResult PostTunnel()
@@ -69,7 +65,7 @@ namespace RodecoRADI.WebAPI.Controllers
                     await file.CopyToAsync(ms);
                     var photo = new Photo() { Description = name, Image = ms.ToArray() };
 
-                    Func<BaseEntity, bool> predicate = x => x.Id == Guid.Parse(associatedEntityGuid.Trim('"'));
+                    Func<IBaseEntity, bool> predicate = x => x.Id == Guid.Parse(associatedEntityGuid.Trim('"'));
 
                     var entity =
                         rodecoContext.Galleries.FirstOrDefault(predicate) ??
@@ -82,7 +78,7 @@ namespace RodecoRADI.WebAPI.Controllers
                         entity.Photos ??= new List<Photo>();
                         entity.Photos.Add(photo);
                     }
-                    await rodecoContext.SaveChangesAsync();
+                    rodecoContext.SaveChanges();
                     return Ok(photo.Id);
                 }
             }

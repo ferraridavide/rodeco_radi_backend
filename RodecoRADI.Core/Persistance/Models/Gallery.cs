@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace RodecoRADI.Core.Persistance.Models
 {
-    public class Gallery : BaseEntity
+    public class Gallery : IBaseEntity
     {
         [NotMapped]
         [JsonPropertyName("id")]
@@ -23,7 +23,7 @@ namespace RodecoRADI.Core.Persistance.Models
         [NotMapped]
         public Coordinates? Coordinates => StartCoordinates;
 
-        public DateTime CreationDate { get; set; }
+        public DateTimeOffset CreationDate { get; set; }
 
         [JsonIgnore]
         [NotMapped]
@@ -50,10 +50,20 @@ namespace RodecoRADI.Core.Persistance.Models
         public EnumOrCustom<PavementMaterial>? PavementMaterial { get; set; }
         public EnumOrCustom<GalleryPedestrianWayMaterial>? PedestrianWayMaterial { get; set; }
         public EnumOrCustom<Installations>? Installations { get; set; }
+        [OverlayIgnore]
         public ICollection<Photo>? Photos { get; set; }
         public string? Waterproofing { get; set; }
         public int? nDrainageFacilities { get; set; }
         public string? GalleryIllumination { get; set; }
         public string? Notes { get; set; }
+
+        [JsonIgnore]
+        public DateTimeOffset? DateCreated { get; set; }
+
+        [JsonIgnore]
+        public DateTimeOffset? DateModified { get; set; }
+
+        [JsonIgnore]
+        public bool MarkAsDeleted { get; set; } = false;
     }
 }

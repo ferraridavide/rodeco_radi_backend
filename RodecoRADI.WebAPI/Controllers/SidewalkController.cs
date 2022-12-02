@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using RodecoRADI.Core.Persistance.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using RodecoRADI.Core;
 using RodecoRADI.Core.Persistance;
+using RodecoRADI.Core.Persistance.Models;
 
 namespace RodecoRADI.WebAPI.Controllers
 {
@@ -22,7 +23,7 @@ namespace RodecoRADI.WebAPI.Controllers
         [Produces(typeof(Sidewalk))]
         public IActionResult Get(Guid id)
         {
-            var sidewalk = rodecoContext.Sidewalks.FirstOrDefault(x => x.Id == id);
+            var sidewalk = rodecoContext.Sidewalks.Include(x => x.Photos).FirstOrDefault(x => x.Id == id);
             if (sidewalk is null)
             {
                 return NotFound();
@@ -33,9 +34,11 @@ namespace RodecoRADI.WebAPI.Controllers
         [HttpPost("post")]
         public Guid Post([FromBody] Sidewalk sidewalk)
         {
-            if (rodecoContext.Sidewalks.Any(x => x.Id == sidewalk.Id))
+            var source = rodecoContext.Sidewalks.FirstOrDefault(x => x.Id == sidewalk.Id);
+            if (source is not null)
             {
-                rodecoContext.Sidewalks.Update(sidewalk);
+                source.Overlay(sidewalk);
+                if (sidewalk.Photos is not null) foreach (var photo in sidewalk.Photos) rodecoContext.ProcessPhoto(photo);
             }
             else
             {
@@ -54,7 +57,7 @@ namespace RodecoRADI.WebAPI.Controllers
             {
                 return NotFound();
             }
-            rodecoContext.Sidewalks.Remove(sidewalk);
+            sidewalk.MarkAsDeleted = true;
             rodecoContext.SaveChanges();
             return NoContent();
         }

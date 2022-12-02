@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace RodecoRADI.Core.Persistance.Models
 {
-    public class Bridge : BaseEntity
+    public class Bridge : IBaseEntity
     {
         [NotMapped]
         [JsonPropertyName("id")]
@@ -28,7 +28,7 @@ namespace RodecoRADI.Core.Persistance.Models
         [NotMapped]
         public Coordinates? Coordinates => StartCoordinates;
 
-        public DateTime CreationDate { get; set; }
+        public DateTimeOffset CreationDate { get; set; }
 
         [JsonIgnore]
         [NotMapped]
@@ -45,7 +45,7 @@ namespace RodecoRADI.Core.Persistance.Models
         public EnumOrCustom<BridgeFacilityType>? FacilityType { get; set; }
         public EnumOrCustom<AxleShape>? BridgeAxleShape { get; set; }
         public EnumOrCustom<BridgeAlignmentShape>? AlignmentShapeOnBridge { get; set; }
-        public EnumOrCustom<BridgePavementMaterial>? PavementTransverseFall { get; set; }
+        public EnumOrCustom<PavementTransverseFall>? PavementTransverseFall { get; set; }
         public EnumOrCustom<BridgeStaticSystem>? StaticSystem { get; set; }
         public EnumOrCustom<BridgeConstructionMethod>? ConstructionMethod { get; set; }
         public EnumOrCustom<BridgeFoundation>? Foundation { get; set; }
@@ -78,7 +78,16 @@ namespace RodecoRADI.Core.Persistance.Models
         public string? WidthLeftPedestrianWay { get; set; }
         public string? WidthRightPedestrianWay { get; set; }
 
-
+        [OverlayIgnore]
         public ICollection<Photo>? Photos { get; set; }
+
+        [JsonIgnore]
+        public DateTimeOffset? DateCreated { get; set; }
+
+        [JsonIgnore]
+        public DateTimeOffset? DateModified { get; set; }
+
+        [JsonIgnore]
+        public bool MarkAsDeleted { get; set; } = false;
     }
 }

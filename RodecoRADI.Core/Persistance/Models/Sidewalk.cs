@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace RodecoRADI.Core.Persistance.Models
 {
-    public class Sidewalk : BaseEntity
+    public class Sidewalk : IBaseEntity
     {
         [NotMapped]
         [JsonPropertyName("id")]
@@ -28,7 +28,7 @@ namespace RodecoRADI.Core.Persistance.Models
         [NotMapped]
         public Coordinates? Coordinates => StartCoordinates;
 
-        public DateTime CreationDate { get; set; }
+        public DateTimeOffset CreationDate { get; set; }
 
         [JsonIgnore]
         [NotMapped]
@@ -48,6 +48,16 @@ namespace RodecoRADI.Core.Persistance.Models
         public EnumOrCustom<SidewalkStructureMaterial>? StructureMaterial { get; set; }
         public string? Notes { get; set; }
 
+        [OverlayIgnore]
         public ICollection<Photo>? Photos { get; set; }
+
+        [JsonIgnore]
+        public DateTimeOffset? DateCreated { get; set; }
+
+        [JsonIgnore]
+        public DateTimeOffset? DateModified { get; set; }
+
+        [JsonIgnore]
+        public bool MarkAsDeleted { get; set; } = false;
     }
 }
